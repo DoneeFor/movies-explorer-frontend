@@ -1,0 +1,30 @@
+.navigation__list {
+    display: flex;
+    justify-self: flex-start;
+    list-style: none;
+    padding: 0;
+}
+  
+  .navigation__item {
+    border-bottom: 1px solid rgba(0, 0, 0, 0);
+    font-size: 13px;
+    margin: 0 ;
+    cursor: pointer;
+    color: black;
+    text-decoration: none;
+    margin-left: 16px;
+}
+  
+  .navigation__link:any-link {
+    color: black;
+    text-decoration: none;
+}
+  
+  .navigation__item:hover {
+    transition: 1s;
+    border-bottom: 1px solid black;
+}
+  
+  .navigation__item_selected {
+    font-weight: 90;
+}
