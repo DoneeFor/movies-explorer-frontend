@@ -41,10 +41,12 @@ function Header() {
 
     return (
       <header className='header'>
-        <Link className='header__logo-link' to='/'>
-          <img className='header__logo' src={logoImage} alt='Логотип' />
-        </Link>
-        <Navigation />
+        <div className="header__container">
+          <Link className='header__logo-link' to='/'>
+            <img className='header__logo' src={logoImage} alt='Логотип' />
+          </Link>
+          <Navigation />
+        </div>
         {user ? (
           <UserLink />
         ) : (
