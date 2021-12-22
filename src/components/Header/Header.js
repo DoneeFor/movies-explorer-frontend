@@ -1,67 +1,34 @@
-import { useContext } from "react";
-
 import Navigation from "../Navigation/Navigation";
 import logoImage from "../../images/logo.svg";
-import UserContext from "../../context/userContext";
-import useWindowSize from "../../utils/useWindowWidth";
-import Menu from "../Menu/Menu";
-import UserLink from "../UserLink/UserLink";
-
-import { Link, useLocation } from "react-router-dom";
+import { Link, Route, Switch } from "react-router-dom";
 
 import "./Header.css";
 
-function Header() {
-  const user = useContext(UserContext);
-  const curRoute = useLocation().pathname;
-  const { width } = useWindowSize();
-
-  if (curRoute === "/movies" || curRoute === "/saved-movies" || curRoute === "/" || curRoute === "/profile") {
-    if (width <= 768) {
-      return (
-        <header className='header'>
-          <Link className='header__logo-link' to='/'>
-            <img className='header__logo' src={logoImage} alt='Логотип' />
-          </Link>
-          {user ? (
-            <Menu />
-          ) : (
-            <span>
-              <Link className='header__signup' to='/signup'>
-                Регистрация
-              </Link>
-              <Link className='header__signin' to='/signin'>
-                Войти
-              </Link>
-            </span>
-          )}
+function Header({ isLoggedIn }) {
+  return (
+    <Switch>
+      <Route exact path="/">
+        <header className="header header_colored">
+          <div className="header__wrap">
+            <Link to="/">
+              <img src={logoImage} alt="Логотип сайта" />
+            </Link>
+            <Navigation isLoggedIn={isLoggedIn} isHeaderColored={true} />
+          </div>
         </header>
-      );
-    }
-
-    return (
-      <header className='header'>
-        <div className="header__container">
-          <Link className='header__logo-link' to='/'>
-            <img className='header__logo' src={logoImage} alt='Логотип' />
-          </Link>
-          <Navigation />
-        </div>
-        {user ? (
-          <UserLink />
-        ) : (
-          <span>
-            <Link className='header__signup' to='/signup'>
-              Регистрация
+      </Route>
+      <Route path="/(movies|saved-movies|profile)">
+        <header className="header">
+          <div className="header__wrap">
+            <Link to="/">
+              <img src={logoImage} alt="Логотип сайта" />
             </Link>
-            <Link className='header__signin' to='/signin'>
-              Войти
-            </Link>
-          </span>
-        )}
-      </header>
-    );
-  } else return "";
+            <Navigation isLoggedIn={isLoggedIn} isHeaderColored={false} />
+          </div>
+        </header>
+      </Route>
+    </Switch>
+  );
 }
 
 export default Header;
