@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, NavLink } from 'react-router-dom';
+import profileImg from "../../images/icon__profile.svg";
 
 import "./Navigation.css";
 
@@ -22,7 +23,12 @@ function Navigation({ isLoggedIn, isHeaderColored }) {
           <div className="navigation__desktop-menu">
             <NavLink className={`navigation__site-link ${isHeaderColored ? "navigation__site-link_white" : ""}`} activeClassName="navigation__site-link_active" to="/movies">Фильмы</NavLink>
             <NavLink className={`navigation__site-link ${isHeaderColored ? "navigation__site-link_white" : ""}`} activeClassName="navigation__site-link_active" to="/saved-movies">Сохранённые фильмы</NavLink>
-            <Link className="navigation__user-profile" to="/profile">Аккаунт</Link>
+            <Link className="navigation__user-link" to="/profile">
+              <div className="navigation__user-link__button">
+                <img className='navigation__user-link__pic' src={profileImg} alt='Изображение профиля' />
+                <p className="navigation__user-link__title">Аккаунт</p>
+              </div>
+            </Link>
           </div>
 
           <button className={`navigation__menu-open`} onClick={handleMenuOpen} type="button"></button>
@@ -40,7 +46,12 @@ function Navigation({ isLoggedIn, isHeaderColored }) {
           <NavLink className="mobile-menu__site-link" activeClassName="mobile-menu__site-link_active" exact to="/" onClick={handleMenuClose}>Главная</NavLink>
           <NavLink className="mobile-menu__site-link" activeClassName="mobile-menu__site-link_active" to="/movies" onClick={handleMenuClose}>Фильмы</NavLink>
           <NavLink className="mobile-menu__site-link" activeClassName="mobile-menu__site-link_active" to="/saved-movies" onClick={handleMenuClose}>Сохранённые фильмы</NavLink>
-          <Link className="mobile-menu__user-profile" to="/profile" onClick={handleMenuClose}>Аккаунт</Link>
+          <Link className="mobile-menu__user-link" onClick={handleMenuClose} to="/profile">
+            <div className="navigation__user-link__button">
+              <img className='navigation__user-link__pic' src={profileImg} alt='Изображение профиля' />
+              <p className="navigation__user-link__title">Аккаунт</p>
+            </div>
+          </Link>
         </div>
       </div>
     </nav>

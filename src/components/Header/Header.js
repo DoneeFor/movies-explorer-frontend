@@ -1,3 +1,4 @@
+import React from 'react';
 import Navigation from "../Navigation/Navigation";
 import logoImage from "../../images/logo.svg";
 import { Link, Route, Switch } from "react-router-dom";

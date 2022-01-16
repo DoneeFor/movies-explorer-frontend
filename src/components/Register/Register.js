@@ -1,97 +1,90 @@
-import logo from '../../images/logo.svg';
-import { Link, withRouter } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-
+import React from 'react';
 import './Register.css';
+import { useFormWithValidation } from '../../hooks/useFormWithValidation';
+import Form from '../Form/Form';
 
-function Register({ onRegister }) {
-  const {
-    register,
-    formState: { errors },
-    handleSubmit,
-  } = useForm({ mode: 'onChange' });
-  const onSubmit = (data) => {
+function Register({ onRegister, isSending, requestStatus }) {
+  const { values, handleChange, resetFrom, errors, isValid } = useFormWithValidation();
+  const isDisabled = !isValid || isSending;
 
-    console.log(data);
-    onRegister(data);
-  };
+  function handleSubmit(evt) {
+    evt.preventDefault();
+    onRegister(values);
+  }
+
+  React.useEffect(() => {
+    resetFrom({}, {}, false);
+  }, [resetFrom]);
 
   return (
-    <div className="register">
-      <div className="register__container">
-        <Link className="register__img-link" to="/">
-          <img className="register__logo" alt="логотип" src={logo}></img>
-        </Link>
-        <h2 className="register__title">Добро пожаловать!</h2>
-        <form
-          className="register__form"
-          onSubmit={handleSubmit(onSubmit)}
-          noValidate
-        >
-          <label
-            className="register__input-label"
-            htmlFor="register-input-name"
-          >
-            Имя
-          </label>
+    <section className="register">
+      <Form
+        formName="register"
+        titleText="Добро пожаловать!"
+        submitButtonText="Зарегистрироваться"
+        questionText="Уже зарегистрированы?"
+        linkPath="/signin"
+        linkText="Войти"
+        isSubmitDisabled={isDisabled}
+        onSubmit={handleSubmit}
+        requestStatus={requestStatus}
+      >
+        <label className="form__label">
+          <span className="form__label-text">Имя</span>
           <input
-            className="register__input"
+            value={values.name || ''}
+            onChange={handleChange}
+            id="name-input"
             type="text"
-            id="register-input-name"
-            {...register('name', {
-              required: true,
-              minLength: 2,
-              maxLength: 12,
-              pattern: /^[A-Za-zА-Яа-яё -]+$/,
-            })}
+            name="name"
+            placeholder="Имя"
+            className="form__input form__input_type_name"
+            minLength="2"
+            maxLength="30"
             required
           />
-          <p className="register__input-error">
-            {errors.name?.type === 'required' && '"Имя" обязательное поле'}
-            {errors.name?.type === 'minLength' && 'минимальная длина 2 символа'}
-            {errors.name?.type === 'maxLength' &&
-              'максимальная длина 12 символов'}
-          </p>
-          <label
-            className="register__input-label"
-            htmlFor="register-input-email"
-          >
-            Email
-          </label>
+          <span className="name-input-error form__input-error">
+            {errors.name || ''}
+          </span>
+        </label>
+
+        <label className="form__label">
+          <span className="form__label-text">E-mail</span>
           <input
-            className="register__input"
+            value={values.email || ''}
+            onChange={handleChange}
+            id="email-input"
             type="email"
-            id="register-input-email"
-            {...register('email', { required: true, pattern: /^\S+@\S+$/i })}
+            pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+            name="email"
+            placeholder="E-mail"
+            className="form__input form__input_type_email"
+            required
           />
-          <p className="register__input-error">
-            {errors.email?.type === 'required' && 'email is required'}
-            {errors.email?.type === 'pattern' && 'email must be email'}
-          </p>
-          <label
-            className="register__input-label"
-            htmlFor="register-input-password"
-          >
-            Пароль
-          </label>
+          <span className="email-input-error form__input-error">
+            {errors.email || ''}
+          </span>
+        </label>
+
+        <label className="form__label" >
+          <span className="form__label-text">Пароль</span>
           <input
-            className="register__input register__input_color-red"
+            value={values.password || ''}
+            onChange={handleChange}
+            id="password-input"
             type="password"
-            id="register-input-password"
-            {...register('password', { required: true })}
+            name="password"
+            placeholder="Пароль"
+            className="form__input form__input_type_password"
+            required
           />
-          <p className="register__input-error">Что-то пошло не так...</p>
-          <button className="register__button">Зарегистрироваться</button>
-          <p className="register__subtitle">
-            Уже зарегистрированы?
-            <Link className="register__link" to="/signin">
-              Войти
-            </Link>
-          </p>
-        </form>
-      </div>
-    </div>
+          <span className="password-input-error form__input-error">
+            {errors.password || ''}
+          </span>
+        </label>
+      </Form>
+    </section>
   );
 }
 
-export default withRouter(Register);
+export default Register;

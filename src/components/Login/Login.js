@@ -1,71 +1,72 @@
-import logo from '../../images/logo.svg';
-import { Link, withRouter } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-
+import React from 'react';
 import './Login.css';
+import { useFormWithValidation } from '../../hooks/useFormWithValidation';
+import Form from '../Form/Form';
 
-function Login({ onLogin }) {
-  const {
-    register,
-    formState: { errors },
-    handleSubmit,
-  } = useForm({ mode: 'onChange' });
-  const onSubmit = (data) => {
-    const { email, password } = data;
-    console.log(data);
-    onLogin(email, password);
-  };
+function Login({ onLogin, isSending, requestStatus }) {
+  const { values, handleChange, resetFrom, errors, isValid } = useFormWithValidation();
+  const isDisabled = !isValid || isSending;
+
+  function handleSubmit(evt) {
+    evt.preventDefault();
+    onLogin(values);
+  }
+
+  React.useEffect(() => {
+    resetFrom({}, {}, false);
+  }, [resetFrom]);
 
   return (
-    <div className="login">
-      <div className="login__container">
-        <Link className="login__img-link" to="/">
-          <img className="login__logo" alt="логотип" src={logo}></img>
-        </Link>
-        <h2 className="login__title">Рады видеть!</h2>
-        <form
-          className="login__form"
-          onSubmit={handleSubmit(onSubmit)}
-          noValidate
-        >
-          <label className="login__input-label" htmlFor="login-input-email">
-            Email
-          </label>
+    <section className="login">
+      <Form
+        formName="login"
+        titleText="Рады видеть!"
+        submitButtonText="Войти"
+        questionText="Ещё не зарегистрированы?"
+        linkPath="/signup"
+        linkText="Регистрация"
+        isSubmitDisabled={isDisabled}
+        onSubmit={handleSubmit}
+        requestStatus={requestStatus}
+      >
+
+        <label className="form__label">
+          <span className="form__label-text">E-mail</span>
           <input
-            className="login__input"
+            value={values.email || ''}
+            onChange={handleChange}
+            id="email-input"
             type="email"
-            id="login-input-email"
-            {...register('email', { required: true, pattern: /^\S+@\S+$/i })}
+            pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+            name="email"
+            placeholder="E-mail"
+            className="form__input form__input_type_email"
             required
           />
-          <p className="login__input-error">
-            {errors.email?.type === 'required' && 'email is required'}
-            {errors.email?.type === 'pattern' && 'email must be email'}
-          </p>
-          <label className="login__input-label" htmlFor="login-input-password">
-            Пароль
-          </label>
-          <input
-            className="login__input login__input_color-red"
-            type="password"
-            id="login-input-password"
-            {...register('password', { required: true })}
-          />
-          <p className="login__input-error">
-            {errors.password?.type === 'required' && '"Пароль" обязательное поле'}
+          <span className="email-input-error form__input-error">
+            {errors.email || ''}
+          </span>
+        </label>
 
-          </p>
-          <button className="login__button">Войти</button>
-          <p className="login__subtitle">
-            Ещё не зарегистрированы?
-            <Link className="login__link" to="/signup">
-              Регистрация
-            </Link>
-          </p>
-        </form>
-      </div>
-    </div>
+        <label className="form__label">
+          <span className="form__label-text">Пароль</span>
+          <input
+            value={values.password || ''}
+            onChange={handleChange}
+            id="password-input"
+            type="password"
+            name="password"
+            placeholder="Пароль"
+            className="form__input form__input_type_password"
+            required
+          />
+          <span className="password-input-error form__input-error">
+            {errors.password || ''}
+          </span>
+        </label>
+      </Form>
+    </section>
   );
 }
 
-export default withRouter(Login);
+export default Login;

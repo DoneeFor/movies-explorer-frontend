@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-import { Route, Switch, useHistory, BrowserRouter } from "react-router-dom";
+import React from "react";
+import { Route, Switch, useHistory, Redirect } from "react-router-dom";
 import Main from "../Main/Main";
 import Header from "../Header/Header";
 import Footer from "../Footer/Footer";
@@ -10,117 +10,241 @@ import Register from "../Register/Register";
 import Login from "../Login/Login";
 import Profile from "../Profile/Profile";
 import ProtectedRoute from "../ProtectedRoute/ProtectedRoute";
-import * as auth from '../../utils/auth';
-
-import UserContext from "../../context/userContext";
+import api from '../../utils/MainApi';
 import './App.css';
 
-function App() {
+import UserContext from "../../context/userContext";
 
-  const history = useHistory();
+function App() {
   const [isLoggedIn, setIsLoggedIn] = React.useState(false);
   const [currentUser, setCurrentUser] = React.useState({});
+  const [savedMoviesByCurrentUser, setSavedMoviesByCurrentUser] =  React.useState([]);
 
-  function debugUserSet(state) {
-    setCurrentUser(state);
-  }
-  useEffect(() => {
-    debugUserSet(1);
-  }, []);
+  const history = useHistory();
 
-  function onRegister(data) {
-    const { name, email, password } = data;
-    auth
-      .getRegister(name, email, password)
-      .then((res) => {
-        if (res) {
-          onLogin(email, password);
+  const [isRegisterDataSending, setIsRegisterDataSending] = React.useState(false);
+  const [registerRequestStatus, setRegisterRequestStatus] = React.useState({});
+  function handleRegister(registerData) {
+    setIsRegisterDataSending(true);
+    api.signUp(registerData)
+      .then(() => {
+        handleLogin({
+          email: registerData.email,
+          password: registerData.password,
+        });
+      })
+      .catch(err => {
+        if (err.statusCode === 409) {
+          setRegisterRequestStatus({
+            type: 'error',
+            text: 'Пользователь с таким email уже существует'
+          });
+        } else {
+          setRegisterRequestStatus({
+            type: 'error',
+            text: 'При регистрации пользователя произошла ошибка'
+          });
         }
       })
-      .catch((err) => {
-        console.log(err);
-      });
+      .finally(() => {
+        setIsRegisterDataSending(false);
+      })
   }
 
-  function onLogin(email, password) {
-    auth
-      .getLogin(email, password)
-      .then((res) => {
+  const [isLoginDataSending, setIsLoginDataSending] = React.useState(false);
+  const [loginRequestStatus, setLoginRequestStatus] = React.useState({});
+  function handleLogin(loginData) {
+    setIsLoginDataSending(true);
+    api.signIn(loginData)
+      .then(res => {
         localStorage.setItem('jwt', res.token);
         setIsLoggedIn(true);
         history.push('/movies');
       })
-      .catch((err) => {
-        console.log(err);
-        if (err.status === 400) {
-          return console.log('не передано одно из полей');
-        } else if (err.status === 401) {
-          return console.log('пользователь с email не найден');
+      .catch(err => {
+        if (err.statusCode === 401) {
+          setLoginRequestStatus({
+            type: 'error',
+            text: 'Вы ввели неправильный логин или пароль'
+          });
+        } else if (err.statusCode === 400) {
+          setLoginRequestStatus({
+            type: 'error',
+            text: 'При авторизации произошла ошибка. Переданный токен некорректен'
+          });
+        } else {
+          setLoginRequestStatus({
+            type: 'error',
+            text: 'При авторизации произошла ошибка'
+          });
         }
-        return console.log(err.status);
-      });
+      })
+      .finally(() => {
+        setIsLoginDataSending(false);
+      })
+  }
+
+  const [isProfileDataSending, setIsProfileDataSending] = React.useState(false);
+  const [profileRequestStatus, setProfileRequestStatus] = React.useState({});
+  function handleProfileEdit(userData) {
+    setProfileRequestStatus({});
+    setIsProfileDataSending(true);
+    const jwt = localStorage.getItem('jwt');
+    api.updateUser({ userData, jwt })
+      .then((newUserData) => {
+        setCurrentUser(newUserData);
+        setProfileRequestStatus({
+          type: 'success',
+          text: 'Профиль обновлён.'
+        });
+      })
+      .catch(err => {
+        if (err.statusCode === 409) {
+          setProfileRequestStatus({
+            type: 'error',
+            text: 'Пользователь с таким email уже существует'
+          });
+        } else {
+          setProfileRequestStatus({
+            type: 'error',
+            text: 'При обновлении профиля произошла ошибка'
+          });
+        }
+      })
+      .finally(() => {
+        setIsProfileDataSending(false);
+      })
+  }
+
+  function handleSignOut() {
+    setIsLoggedIn(false);
+    localStorage.removeItem('jwt');
+    localStorage.removeItem('initialMovies');
+    history.push('/');
+  }
+
+  function handleMovieSave(movie) {
+    const jwt = localStorage.getItem('jwt');
+    api.saveMovie({ movie, jwt })
+      .then((newSavedMovie) => {
+        setSavedMoviesByCurrentUser((movies) => [
+          newSavedMovie,
+          ...movies
+        ]);
+      })
+      .catch(err => {
+        console.log(err)
+      })
+  }
+
+  function handleMovieDelete(movie) {
+    const jwt = localStorage.getItem('jwt');
+    api.deleteMovie({ movie, jwt })
+      .then(() => {
+        setSavedMoviesByCurrentUser((movies) => movies.filter((m) => m._id !== movie._id));
+      })
+      .catch(err => {
+        console.log(err)
+      })
   }
 
   React.useEffect(() => {
     const jwt = localStorage.getItem('jwt');
     if (jwt) {
-      auth
-        .checkToken(jwt)
-        .then((data) => {
-          if (data) {
+      api.getUser(jwt)
+        .then((res) => {
+          if (res) {
             setIsLoggedIn(true);
-            setCurrentUser(data);
           }
         })
-        .catch((err) => {
-          console.log(err.status);
-          if (err.status === 401) {
-            return console.log('Переданный токен некорректен ');
-          } else if (!jwt) {
-            return console.log('Токен не передан или передан не в том формате');
-          }
-          return console.log('error 500');
+        .catch(err => {
+          console.log(err)
+        })
+    }
+  }, []);
+
+  React.useEffect(() => {
+    const jwt = localStorage.getItem('jwt');
+    if (jwt) {
+      api.getSavedMovies(jwt)
+        .then((data) => {
+          setSavedMoviesByCurrentUser(data.filter((i) => i.owner === currentUser._id));
+        })
+        .catch(err => {
+          console.log(err)
+        })
+    }
+  }, [currentUser]);
+
+  React.useEffect(() => {
+    if (isLoggedIn) {
+      const jwt = localStorage.getItem('jwt');
+      api.getUser(jwt)
+        .then((userData) => {
+          setCurrentUser(userData);
+        })
+        .catch(err => {
+          console.log(err)
         });
     }
   }, [isLoggedIn]);
 
   return (
     <UserContext.Provider value={currentUser}>
-      <div className='App'>
-        <BrowserRouter basename='/'>
-          <Header isLoggedIn={isLoggedIn}/>
+      <div className="page">
+        <div className="page__container">
+          <Header isLoggedIn={isLoggedIn} />
           <Switch>
+            <Route exact path="/">
+              <Main />
+            </Route>
             <ProtectedRoute
-              exact path="/movies"
+              path="/movies"
               component={Movies}
-              isLoggedIn={isLoggedIn}
+              savedMoviesByCurrentUser={savedMoviesByCurrentUser}
+              onMovieSave={handleMovieSave}
+              onMovieDelete={handleMovieDelete}
             />
             <ProtectedRoute
-              exact path="/saved-movies"
+              path="/saved-movies"
               component={SavedMovies}
               isLoggedIn={isLoggedIn}
+              savedMoviesByCurrentUser={savedMoviesByCurrentUser}
+              onMovieDelete={handleMovieDelete}
             />
-            <Route path="/signup">
-              <Register onRegister={onRegister} />
-            </Route>
-            <Route path="/signin">
-              <Login onLogin={onLogin} />
-            </Route>
             <ProtectedRoute
               path="/profile"
               component={Profile}
               isLoggedIn={isLoggedIn}
-              currentUser={currentUser}
+              onProfileEdit={handleProfileEdit}
+              onSignOut={handleSignOut}
+              isSending={isProfileDataSending}
+              requestStatus={profileRequestStatus}
             />
-            <Route exact path='/'>
-              <Main />
+            <Route path="/signin">
+              {isLoggedIn ? <Redirect to="/" /> :
+                <Login
+                  onLogin={handleLogin}
+                  isSending={isLoginDataSending}
+                  requestStatus={loginRequestStatus}
+                />
+              }
             </Route>
-            <Route path='*'>
+            <Route path="/signup">
+              {isLoggedIn ? <Redirect to="/" /> :
+                <Register
+                  onRegister={handleRegister}
+                  isSending={isRegisterDataSending}
+                  requestStatus={registerRequestStatus}
+                />
+              }
+            </Route>
+            <Route path="*">
               <NotFound />
             </Route>
           </Switch>
           <Footer />
-        </BrowserRouter>
+        </div>
       </div>
     </UserContext.Provider>
   );

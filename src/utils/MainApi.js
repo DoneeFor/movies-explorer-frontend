@@ -1,83 +1,113 @@
+import { BEATFILM_URL, BASE_URL } from '../utils/constants';
+
 class Api {
-    constructor(apiOptions) {
-      this._baseUrl = apiOptions.baseUrl;
-    }
-  
-    _getResponseData(res) {
-      if (!res.ok) {
-        return Promise.reject(`Error: ${res.status}`);
-      }
-      return res.json();
-    }
-  
-    getSavedMovies() {
-      return fetch(`${this._baseUrl}/movies`, {
-        method: 'GET',
-        headers: {
-          'Content-type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('jwt')}`,
-        },
-      }).then(this._getResponseData);
-    }
-  
-    updateProfile(data) {
-      return fetch(`${this._baseUrl}/users/me`, {
-        method: 'PATCH',
-        headers: {
-          'Content-type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('jwt')}`,
-        },
-        body: JSON.stringify(data),
-      }).then(this._getResponseData);
-    }
-  
-    saveMovie({
-      movieId,
-      country,
-      director,
-      duration,
-      year,
-      description,
-      image,
-      trailer,
-      nameRU,
-      nameEN,
-      thumbnail,
-    }) {
-      return fetch(`${this._baseUrl}/movies`, {
-        method: 'POST',
-        body: JSON.stringify({
-          movieId,
-          country,
-          director,
-          duration,
-          year,
-          description,
-          image,
-          trailer,
-          nameRU,
-          nameEN,
-          thumbnail,
-        }),
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('jwt')}`,
-          'Content-Type': 'application/json',
-        },
-      }).then(this._getResponseData);
-    }
-  
-    deleteMovie(movieId) {
-      return fetch(`${this._baseUrl}/movies/${movieId}`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('jwt')}`,
-          'Content-Type': 'application/json',
-        },
-      }).then(this._getResponseData);
-    }
+  constructor({ url }) {
+    this.url = url;
   }
-  
-  export const api = new Api({
-    baseUrl: 'https://api.donefor.diplom.nomoredomains.rocks'
-  });
-  
+
+  getResponseData(res) {
+    if (!res.ok) {
+      return Promise.reject(`Ошибка: ${res.status}`);
+    }
+    return res.json();
+  }
+
+  signUp({ email, name, password }) {
+    return fetch(`${this.url}/signup`, {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, name, password }),
+    })
+      .then(res => this.getResponseData(res));
+  }
+
+  signIn({ email, password }) {
+    return fetch(`${this.url}/signin`, {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    })
+      .then(res => this.getResponseData(res));
+  }
+
+  getUser(jwt) {
+    return fetch(`${this.url}/users/me`, {
+      method: 'GET',
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization" : `Bearer ${jwt}`,
+      },
+    })
+      .then(res => this.getResponseData(res));
+  }
+
+  updateUser({ userData, jwt}) {
+    return fetch(`${this.url}/users/me`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        "Authorization" : `Bearer ${jwt}`,
+      },
+      body: JSON.stringify({
+        name: userData.name,
+        email: userData.email
+      }),
+    })
+    .then(res => this.getResponseData(res));
+  }
+
+  getSavedMovies(jwt) {
+    return fetch(`${this.url}/movies`, {
+      method: 'GET',
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization" : `Bearer ${jwt}`,
+      },
+    })
+      .then(res => this.getResponseData(res));
+  }
+
+  saveMovie({ movie, jwt }) {
+    return fetch(`${this.url}/movies`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        "Authorization" : `Bearer ${jwt}`,
+      },
+      body: JSON.stringify({
+        country: movie.country,
+        director: movie.director,
+        duration: movie.duration,
+        year: movie.year,
+        description: movie.description,
+        image: `${BEATFILM_URL}${movie.image.url}`,
+        trailer: movie.trailerLink,
+        nameRU: movie.nameRU,
+        nameEN: movie.nameEN,
+        thumbnail: `${BEATFILM_URL}${movie.image.formats.thumbnail.url}`,
+        movieId: movie.id,
+      }),
+    })
+    .then(res => this.getResponseData(res));
+  }
+
+  deleteMovie({ movie, jwt }) {
+    return fetch(`${this.url}/movies/${movie._id}`, {
+      method: 'DELETE',
+      headers: {
+        "Authorization" : `Bearer ${jwt}`,
+      },
+    })
+    .then(res => this.getResponseData(res));
+  }
+}
+
+const api = new Api({
+  url: `${BASE_URL}`
+});
+
+export default api;

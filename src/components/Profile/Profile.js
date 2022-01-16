@@ -1,116 +1,120 @@
 import React from 'react';
-import { useForm } from 'react-hook-form';
-
+import UserContext from "../../context/userContext";
 import './Profile.css';
+import { useFormWithValidation } from '../../hooks/useFormWithValidation';
 
-function Profile(props) {
-  const { currentUser, onChangeProfile, onLogOut, isUpdateProfileError } =
-    props;
-  const { name, email } = currentUser;
-  const [isValidation, setValidation] = React.useState(false);
+function Profile({ onProfileEdit, onSignOut, isSending, requestStatus: { type, text } }) {
+  const currentUser = React.useContext(UserContext);
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [requestStatusText, setRequestStatusText] = React.useState('');
+  const { values, handleChange, resetFrom, isValid } = useFormWithValidation();
 
-  const form = useForm({ mode: 'onChange' });
+  const isDisabled = !isValid || isSending;
+  const submitButtonClassName = `profile-form__submit ${
+    isDisabled && "profile-form__submit_inactive"
+  }`;
+  const inputClassName = `profile-form__input ${
+    !isEditing && "profile-form__input_disabled"
+  }`;
+  const apiFeedbackClassName = `profile-form__api-feedback profile-form__api-feedback_type_${type}`;
 
-  const {
-    watch,
-    register,
-    formState: { errors },
-    handleSubmit,
-  } = form;
-  const { isValid } = form.formState;
-  const defaultValueName = watch('name');
-  const defaultValueEmail = watch('email');
-
-  React.useEffect(() => {
-    if (
-      (defaultValueName !== name && isValid) ||
-      (defaultValueEmail !== email && isValid)
-    ) {
-      setValidation(true);
-    } else {
-      setValidation(false);
-    }
-  }, [defaultValueName, defaultValueEmail, name, email, isValid, isValidation]);
-
-  const onSubmit = (data) => {
-    setValidation(false);
-
-    onChangeProfile(data);
-  };
-
-  function handleLogOut() {
-    onLogOut();
+  function handleEditClick() {
+    resetFrom(currentUser, {}, false);
+    setIsEditing(true);
+    setRequestStatusText('');
   }
 
+  function handleSubmit(evt) {
+    evt.preventDefault();
+    setIsEditing(false);
+    onProfileEdit(values);
+  }
+
+  React.useEffect(() => {
+    if (text) {
+      setRequestStatusText(text);
+    }
+  }, [text]);
+
+  React.useEffect(() => {
+    if (currentUser) {
+      resetFrom(currentUser, {}, false);
+      setRequestStatusText('');
+    }
+  }, [currentUser, resetFrom]);
+
+
   return (
-    <div className="profile">
+    <section className="profile">
       <form
-        className="profile__form"
-        onSubmit={handleSubmit(onSubmit)}
-        noValidate
+        onSubmit={handleSubmit}
+        className="profile-form"
+        name="login"
+        action="#"
       >
-        <fieldset className="profile__form-fieldset">
-          <h2 className="profile__form-title">Привет, {name}!</h2>
-          <div className="profile__form-input-container">
-            <label htmlFor="profile-name">Имя</label>
-            <input
-              type="text"
-              id="profile-name"
-              className="profile__form-input"
-              placeholder="Имя"
-              defaultValue={name}
-              {...register('name', {
-                required: true,
-                minLength: 2,
-                pattern: /^[A-Za-zА-Яа-яё -]+$/,
-              })}
-            />
-          </div>
-          <div className="profile__form-input-container">
-            <label htmlFor="profile-email">Email</label>
-            <input
-              type="email"
-              id="profile-email"
-              className="profile__form-input"
-              placeholder="Почта"
-              defaultValue={email}
-              {...register('email', {
-                required: true,
-                pattern: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i,
-              })}
-            />
-          </div>
-        </fieldset>
-        <p className="profile__form-errors">
-          {errors.name?.type === 'required' && 'Имя обязательное поле'}
-          {errors.name?.type === 'minLength' && 'Минимальная длина 2 символа'}
-        </p>
-        <p className="profile__form-errors">
-          {errors.email?.type === 'required' && 'Почта обязательное поле'}
-          {errors.email?.type === 'pattern' &&
-            'Почта должна соответствовать почте'}
-        </p>
+        <h1 className="profile-form__title">Привет, {currentUser.name}!</h1>
 
-        <p className="profile__update-errors">{isUpdateProfileError}</p>
+        <label className="profile-form__label">
+          <span className="profile-form__label-text">Имя</span>
+          <input
+            value={values.name || ''}
+            onChange={handleChange}
+            id="name-input"
+            type="text"
+            name="name"
+            placeholder="Имя"
+            className={inputClassName}
+            minLength="2"
+            maxLength="30"
+            required
+            disabled={!isEditing}
+          />
+        </label>
 
-        <button
-          disabled={!isValidation}
-          type="submit"
-          className={`profile__form-button ${
-            !isValidation ? 'profile__form-button_disabled' : ''
-          }`}
-        >
-          Редактировать
-        </button>
-        <button
-          type="button"
-          className="profile__form-button profile__form-button_red"
-          onClick={handleLogOut}
-        >
-          Выйти из аккаунта
-        </button>
+        <label className="profile-form__label">
+          <span className="profile-form__label-text">E-mail</span>
+          <input
+            value={values.email || ''}
+            onChange={handleChange}
+            id="email-input"
+            type="email"
+            pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+            name="email"
+            placeholder="E-mail"
+            className={inputClassName}
+            required
+            disabled={!isEditing}
+          />
+        </label>
+
+        {!isEditing && (
+          <span
+            className={apiFeedbackClassName}
+          >{requestStatusText}</span>
+        )}
+
+        {isEditing ? (
+          <button
+            type="submit"
+            className={submitButtonClassName}
+            disabled={isDisabled}
+          >Сохранить</button>
+        ) : (
+          <>
+            <button
+              onClick={handleEditClick}
+              className="profile-form__edit"
+              type="button"
+            >Редактировать</button>
+            <button
+              onClick={onSignOut}
+              className="profile__logout"
+              type="button"
+            >Выйти из аккаунта</button>
+          </>
+        )}
       </form>
-    </div>
+    </section>
   );
 }
 
