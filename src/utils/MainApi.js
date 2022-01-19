@@ -1,26 +1,30 @@
 import { BEATFILM_URL, BASE_URL } from '../utils/constants';
 
-class Api {
+class MainApi {
   constructor({ url }) {
     this.url = url;
   }
 
-  getResponseData(res) {
-    if (!res.ok) {
-      return Promise.reject(`Ошибка: ${res.status}`);
+  _processingResponse(res) {
+    if (res.ok) {
+      return res.json();
     }
-    return res.json();
+
+    const err = new Error(`Ошибка, код ${res.status}`);
+    err.statusCode = res.status;
+
+    return Promise.reject(err)
   }
 
-  signUp({ email, name, password }) {
+  signUp({ email, password, name }) {
     return fetch(`${this.url}/signup`, {
       method: 'POST',
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ email, name, password }),
+      body: JSON.stringify({ email, password, name }),
     })
-      .then(res => this.getResponseData(res));
+      .then(res => this._processingResponse(res));
   }
 
   signIn({ email, password }) {
@@ -31,7 +35,7 @@ class Api {
       },
       body: JSON.stringify({ email, password }),
     })
-      .then(res => this.getResponseData(res));
+      .then(res => this._processingResponse(res));
   }
 
   getUser(jwt) {
@@ -42,7 +46,7 @@ class Api {
         "Authorization" : `Bearer ${jwt}`,
       },
     })
-      .then(res => this.getResponseData(res));
+      .then(res => this._processingResponse(res));
   }
 
   updateUser({ userData, jwt}) {
@@ -57,7 +61,7 @@ class Api {
         email: userData.email
       }),
     })
-    .then(res => this.getResponseData(res));
+    .then(res => this._processingResponse(res));
   }
 
   getSavedMovies(jwt) {
@@ -68,7 +72,7 @@ class Api {
         "Authorization" : `Bearer ${jwt}`,
       },
     })
-      .then(res => this.getResponseData(res));
+      .then(res => this._processingResponse(res));
   }
 
   saveMovie({ movie, jwt }) {
@@ -80,19 +84,19 @@ class Api {
       },
       body: JSON.stringify({
         country: movie.country,
+        description: movie.description,
         director: movie.director,
         duration: movie.duration,
-        year: movie.year,
-        description: movie.description,
         image: `${BEATFILM_URL}${movie.image.url}`,
-        trailer: movie.trailerLink,
+        movieId: movie.id,
         nameRU: movie.nameRU,
         nameEN: movie.nameEN,
         thumbnail: `${BEATFILM_URL}${movie.image.formats.thumbnail.url}`,
-        movieId: movie.id,
+        trailer: movie.trailerLink,
+        year: movie.year,
       }),
     })
-    .then(res => this.getResponseData(res));
+    .then(res => this._processingResponse(res));
   }
 
   deleteMovie({ movie, jwt }) {
@@ -102,12 +106,12 @@ class Api {
         "Authorization" : `Bearer ${jwt}`,
       },
     })
-    .then(res => this.getResponseData(res));
+    .then(res => this._processingResponse(res));
   }
 }
 
-const api = new Api({
+const mainApi = new MainApi({
   url: `${BASE_URL}`
 });
 
-export default api;
+export default mainApi;

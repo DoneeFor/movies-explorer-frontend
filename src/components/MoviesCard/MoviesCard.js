@@ -51,8 +51,7 @@ function MoviesCard({
         <div className="movie-card__text-block">
           <h2 className="movie-card__title">{movie.nameRU}</h2>
           <span className="movie-card__length">{convertDuration(movie.duration)}</span>
-        </div>
-        <Switch>
+          <Switch>
           <Route path="/movies">
             <button
               className={saveButtonClassName}
@@ -67,7 +66,8 @@ function MoviesCard({
               type="button"
             ></button>
           </Route>
-        </Switch>
+          </Switch>
+        </div>
       </div>
     </li>
   );
