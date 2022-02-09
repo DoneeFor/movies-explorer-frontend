@@ -1,31 +1,35 @@
-import design from '../../images/designFilm.png';
-import bank from '../../images/BanksyFilm.png';
+import React from 'react';
 import './MoviesCardList.css';
 import MoviesCard from '../MoviesCard/MoviesCard';
 
-function MoviesCardList({ place }) {
+function MoviesCardList({
+  movies,
+  savedMoviesByCurrentUser,
+  onMovieSave,
+  onMovieDelete,
+  isMoreButtonVisible = false,
+  onMoreButtonClick
+}) {
+  const moreButtonClassName = `movies-card-list__more-button ${
+    isMoreButtonVisible && "movies-card-list__more-button_visible"
+  }`;
+
   return (
-    <section className='movies-card-list'>
-      <MoviesCard
-        movie={{
-          src: design,
-          title:
-            '33 слова о дизайне',
-          length: '1ч 42м',
-        }}
-        place={place}
-        isSaved={true}
-      />
-      <MoviesCard
-        movie={{
-          src: bank,
-          title: 'В погоне за Бенкси',
-          length: '1ч 42м',
-        }}
-        place={place}
-        isSaved={false}
-      />
-      <button className='movies-card-list__more'>Ещё</button>
+    <section className="movies-card-list">
+        {movies.map((movie) => (
+          <MoviesCard
+            key={movie.id || movie.movieId}
+            movie={movie}
+            savedMoviesByCurrentUser={savedMoviesByCurrentUser}
+            onMovieSave={onMovieSave}
+            onMovieDelete={onMovieDelete}
+          />
+        ))}
+      <button
+        className={moreButtonClassName}
+        onClick={onMoreButtonClick}
+        type="button"
+      >Ещё</button>
     </section>
   );
 }

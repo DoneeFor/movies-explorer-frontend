@@ -1,101 +1,164 @@
 .profile {
-    font-size: 14px;
-    max-width: 410px;
-    margin: auto;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    align-content: center;
-    flex-wrap: nowrap;
-    padding-top: 100px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  flex-grow: 1;
 }
 
-.profile__title {
-    text-align: center;
-    font-size: 24px;
-    font-weight: 500;
-    letter-spacing: 0;
+.profile-form {
+  width: 100%;
+  max-width: 410px;
+  min-height: 80vh;
+  display: flex;
+  flex-direction: column;
 }
 
-.profile__form {
-    margin-top: 110px;
+.profile-form__title {
+  margin: 0;
+  padding: 74px 0 110px;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 24px;
+  line-height: 29px;
+  color: #000000;
+  text-align: center;
 }
 
-.profile__fieldset {
-    padding: 0;
-    margin-inline-start: 0;
-    margin-inline-end: 0;
-    border: 0;
-    display: flex;
-    flex-direction: column;
+.profile-form__label {
+  display: flex;
+  justify-content: space-between;
+  gap: 40px;
+  border-bottom: 1px solid #E8E8E8;
 }
 
-.profile__input {
-    text-align: right;
-    border: 0;
-    outline: 0;
-    width: inherit;
-    max-width: 350px;
-    float: right;
-    transition: 0.3s;
+.profile-form__label-text {
+  padding: 16px 0;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 11px;
+  line-height: 13px;
+  color: #000000;
 }
 
-.profile__input:focus {
-    font-weight: 600;
+.profile-form__label:last-of-type {
+  border-bottom: none;
+  margin-bottom: auto;
 }
 
-.profile__field {
-    max-width: 410px;
-    width: 100%;
-    padding: 15px 0;
+.profile-form__input {
+  flex-grow: 1;
+  padding: 0;
+  border:none;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 11px;
+  line-height: 13px;
+  text-align: right;
+  color: #000000;
 }
 
-.profile__fieldset > .profile__field:first-child {
-    border-bottom: 1px solid #e8e8e8;
+.profile-form__input:focus {
+  outline: none;
 }
 
-.profile__input:focus .profile__label {
-    opacity: 0.5;
+.profile-form__input_disabled {
+  background-color: transparent;
 }
 
-.profile__submit {
-    display: block;
-    margin-top: 200px;
-    width: 100%;
-    border: 0;
-    text-align: center;
-    background-color: rgba(0, 0, 0, 0);
-    margin: 200px auto 0;
-    padding: 0;
-    border-bottom: 2px solid transparent;
+.profile-form__submit {
+  min-height: 50px;
+  border: none;
+  background-color: #2BE080;
+  border-radius: 3px;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 17px;
+  color: #FFFFFF;
 }
 
-.profile__submit:hover {
-    border-bottom-color: black;
+.profile-form__submit_inactive {
+  background-color: #F8F8F8;
+  color: #C2C2C2;
 }
 
-.profile__signout {
-    background-color: rgba(0, 0, 0, 0);
-    outline: 0;
-    border: 0;
-    color: #ff4062;
-    margin-top: 16px;
-    border-bottom: 2px solid transparent;
-    margin: 16px auto;
-    max-width: 128px;
-    padding: 0;
+.profile-form__submit:hover {
+  cursor: pointer;
+  opacity: 0.8;
 }
 
-.profile__signout:hover {
-    border-bottom-color: #ff4062;
+.profile-form__api-feedback {
+  margin-bottom: 20px;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 11px;
+  line-height: 13px;
+  text-align: center;
 }
 
-@media screen and (max-width: 450px) {
-    .profile {
-        max-width: calc(100% - 40px);
-    }
+.profile-form__api-feedback_type_error {
+  color: #FF004C;
+}
 
-    .profile__input {
-        max-width: calc(100% - 19vw);
-    }
+.profile-form__api-feedback_type_success {
+  color: #2BE080;
+}
+
+.profile-form__edit {
+  padding: 0;
+  border: none;
+  background-color: transparent;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 13px;
+  line-height: 16px;
+  color: #000000;
+}
+
+.profile-form__edit:hover {
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+.profile__logout {
+  margin: 16px 0;
+  padding: 0;
+  border: none;
+  background-color: transparent;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 16px;
+  color: #EE3465;
+}
+
+.profile__logout:hover {
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+@media screen and (max-width: 530px) {
+  .profile {
+    padding: 0 30px;
+  }
+
+  .profile-form__title {
+    padding: 70px 0 80px;
+  }
+
+  .profile-form__submit {
+    font-size: 12px;
+    line-height: 15px;
+  }
+
+  .profile-form__edit {
+    font-size: 12px;
+    line-height: 15px;
+  }
+
+  .profile__logout {
+    font-size: 12px;
+    line-height: 15px;
+  }
 }
